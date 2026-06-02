@@ -51,7 +51,7 @@ export class GeminiProvider extends AIProvider {
 
     // Retry logic for rate limiting
     let lastError: Error | null = null;
-    const maxRetries = 2;
+    const maxRetries = 1;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {

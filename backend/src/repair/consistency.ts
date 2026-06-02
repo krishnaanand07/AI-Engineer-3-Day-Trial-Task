@@ -94,6 +94,28 @@ export function repairConsistency(
     }
   }
 
+  // ─── Fix Page-API Consistency ───
+  if (Array.isArray(obj['pages']) && Array.isArray(obj['apiEndpoints'])) {
+    const endpoints = obj['apiEndpoints'] as Record<string, unknown>[];
+    for (const page of obj['pages'] as Record<string, unknown>[]) {
+      if (page['entity'] && typeof page['entity'] === 'string') {
+        const entity = page['entity'] as string;
+        const hasEndpoint = endpoints.some(ep => ep['entity'] === entity);
+        if (!hasEndpoint) {
+          endpoints.push({
+            path: `/api/${entity.toLowerCase().replace(/[^a-z0-9]/g, '')}`,
+            method: 'GET',
+            handler: `Auto-generated endpoint for ${entity}`,
+            entity: entity,
+            authRequired: true,
+            rateLimit: false,
+          });
+          fixes.push(`Consistency: Added missing API endpoint for page entity '${entity}'`);
+        }
+      }
+    }
+  }
+
   // ─── Fix workflow stub references ───
   if (Array.isArray(obj['workflowStubs'])) {
     const validWorkflows: Record<string, unknown>[] = [];

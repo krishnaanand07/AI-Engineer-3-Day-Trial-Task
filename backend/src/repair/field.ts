@@ -139,6 +139,17 @@ export function repairFields(
 
   if (schemaType === 'appSpec') {
     // Fix pages
+    if (!Array.isArray(obj['pages']) || obj['pages'].length === 0) {
+      obj['pages'] = [{
+        name: 'Home',
+        route: '/',
+        layout: 'dashboard',
+        components: ['card'],
+        requiresAuth: false,
+      }];
+      fieldsFixed.push("Added default 'Home' page to empty pages array");
+    }
+    
     if (Array.isArray(obj['pages'])) {
       for (const page of obj['pages'] as Record<string, unknown>[]) {
         for (const [key, defaultVal] of Object.entries(PAGE_DEFAULTS)) {
@@ -147,7 +158,19 @@ export function repairFields(
             fieldsFixed.push(`Page '${page['name']}': added default '${key}'`);
           }
         }
-        if (Array.isArray(page['components'])) {
+        if (typeof page['requiresAuth'] === 'string') {
+          page['requiresAuth'] = page['requiresAuth'] === 'true';
+          fieldsFixed.push(`Page '${page['name']}': coerced requiresAuth to boolean`);
+        }
+        const validLayouts = ['list', 'detail', 'dashboard', 'settings', 'form', 'auth'];
+        if (typeof page['layout'] !== 'string' || !validLayouts.includes(page['layout'] as string)) {
+          page['layout'] = 'list';
+          fieldsFixed.push(`Page '${page['name']}': reset invalid layout to 'list'`);
+        }
+        if (!Array.isArray(page['components']) || page['components'].length === 0) {
+          page['components'] = ['card'];
+          fieldsFixed.push(`Page '${page['name']}': added default 'card' to empty components`);
+        } else {
           const validComponents = ['table', 'form', 'chart', 'card', 'stats', 'calendar', 'kanban', 'map', 'search', 'list', 'gallery'];
           const newComponents = [];
           let changed = false;
@@ -164,7 +187,19 @@ export function repairFields(
         }
       }
     }
+
     // Fix API endpoints
+    if (!Array.isArray(obj['apiEndpoints']) || obj['apiEndpoints'].length === 0) {
+      obj['apiEndpoints'] = [{
+        path: '/api/health',
+        method: 'GET',
+        handler: 'Health check',
+        authRequired: false,
+        rateLimit: false,
+      }];
+      fieldsFixed.push("Added default '/api/health' endpoint to empty apiEndpoints array");
+    }
+    
     if (Array.isArray(obj['apiEndpoints'])) {
       for (const ep of obj['apiEndpoints'] as Record<string, unknown>[]) {
         for (const [key, defaultVal] of Object.entries(ENDPOINT_DEFAULTS)) {
@@ -172,6 +207,19 @@ export function repairFields(
             ep[key] = defaultVal;
             fieldsFixed.push(`Endpoint '${ep['path']}': added default '${key}'`);
           }
+        }
+        for (const boolKey of ['authRequired', 'rateLimit']) {
+          if (typeof ep[boolKey] === 'string') {
+            ep[boolKey] = ep[boolKey] === 'true';
+            fieldsFixed.push(`Endpoint '${ep['path']}': coerced ${boolKey} to boolean`);
+          }
+        }
+        const validMethods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+        if (typeof ep['method'] !== 'string' || !validMethods.includes((ep['method'] as string).toUpperCase())) {
+          ep['method'] = 'GET';
+          fieldsFixed.push(`Endpoint '${ep['path']}': reset invalid method to GET`);
+        } else {
+          ep['method'] = (ep['method'] as string).toUpperCase();
         }
       }
     }
