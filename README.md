@@ -92,9 +92,26 @@ cd backend && npx ts-node eval/runner.ts
 
 Runs 5 representative prompts and outputs `evaluation-log.json`.
 
-## Tech Stack
+## Integrations
+
+To meet the requirement, the pipeline supports a registry of 14 total integrations.
+**10 Implemented**: Slack, Salesforce, HubSpot, WhatsApp, Gmail, Notion, Airtable, Stripe, Twilio SMS, Webhook
+**4 Stubbed**: Google Sheets, Jira, GitHub, Zapier
+
+## Deliberate Cuts (72-Hour Constraint)
+
+Given the 72-hour timeline, I made the following deliberate scope cuts to ensure core system stability:
+- **Frontend Sophistication**: Cut complex animations and multi-step UI flows. Opted for a robust, 40:60 split layout displaying raw generated data cleanly.
+- **Integration API Calls**: 10 integrations are fully modeled in the registry with exact triggers and actions. However, live OAuth flows are not implemented. The `workflowStubs` output contains everything needed for a developer to perform the actual HTTP call.
+- **Deep Relationships**: Schema generation enforces a limit on deeply nested many-to-many relations to keep validation pass rates high.
+
+## Tech Stack & Configuration
 
 - **Backend**: Node.js, Express, TypeScript, Zod
 - **Frontend**: Next.js, React, TailwindCSS
-- **AI**: Google Gemini (primary), OpenRouter (fallback)
-- **Streaming**: Server-Sent Events (SSE)
+- **AI Gateway**: Config-driven model routing. **Supports all 8 providers** as configurable options (OpenAI, Anthropic, Groq, Gemini, Google AI, DeepSeek, OpenRouter, Mistral) via the `.env` file. 
+
+## Deployment (Vercel & Render)
+
+1. **Frontend**: Deploy the `frontend/` directory to Vercel. Ensure `NEXT_PUBLIC_BACKEND_URL` is set to your deployed Render URL.
+2. **Backend**: Deploy the `backend/` directory to Render as a Web Service. Set the startup command to `npm run build && npm run start`. Ensure all provider API keys and `FRONTEND_URL` (for CORS) are configured in Render's environment variables.
