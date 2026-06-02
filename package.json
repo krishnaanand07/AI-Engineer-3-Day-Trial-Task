@@ -1,0 +1,15 @@
+{
+  "name": "oneatlas-ai-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "typecheck": "cd backend && npx tsc --noEmit && cd ../frontend && npx tsc --noEmit"
+  }
+}

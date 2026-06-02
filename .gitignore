@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.local
+.next/
+evaluation-log.json
+*.log
+.DS_Store
