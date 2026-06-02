@@ -13,18 +13,34 @@ export default function ErrorPanel({ events, repairLog }: ErrorPanelProps) {
   );
   const repairs = events.filter((e) => e.type === 'repair_attempt');
   
-  const isHealthy = errors.length === 0 && repairs.length === 0 && repairLog.length === 0;
+  const hasErrors = errors.length > 0;
+  const hasRepairs = repairs.length > 0 || repairLog.length > 0;
+  const isHealthy = !hasErrors && !hasRepairs;
 
   // Calculate success percentage loosely based on events
   const totalStages = events.filter(e => e.type === 'stage_start').length || 1;
   const failedStages = errors.length;
   const successPercentage = Math.max(0, Math.round(((totalStages - failedStages) / totalStages) * 100));
 
+  let statusText = 'Operational';
+  let statusColor = 'text-emerald-600';
+  let iconColor = 'bg-emerald-100 text-emerald-600';
+
+  if (hasErrors) {
+    statusText = 'Failing';
+    statusColor = 'text-red-600';
+    iconColor = 'bg-red-100 text-red-600';
+  } else if (hasRepairs) {
+    statusText = 'Recovered';
+    statusColor = 'text-amber-600';
+    iconColor = 'bg-amber-100 text-amber-600';
+  }
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 flex flex-col relative overflow-hidden">
       <div className="flex items-center gap-3 mb-4">
-        <div className={`w-8 h-8 rounded flex items-center justify-center ${isHealthy ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
-          {isHealthy ? (
+        <div className={`w-8 h-8 rounded flex items-center justify-center ${iconColor}`}>
+          {!hasErrors ? (
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
             </svg>
@@ -42,8 +58,8 @@ export default function ErrorPanel({ events, repairLog }: ErrorPanelProps) {
       <div className="grid grid-cols-2 gap-3 mb-4">
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
           <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status</p>
-          <p className={`text-[13px] font-semibold ${isHealthy ? 'text-emerald-600' : 'text-red-600'}`}>
-            {isHealthy ? 'Operational' : 'Failing'}
+          <p className={`text-[13px] font-semibold ${statusColor}`}>
+            {statusText}
           </p>
         </div>
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
