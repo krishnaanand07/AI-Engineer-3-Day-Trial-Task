@@ -23,7 +23,13 @@ export async function getJobStatus(jobId: string): Promise<Record<string, unknow
   const response = await fetch(`${BACKEND_URL}/api/generate/${jobId}`);
 
   if (!response.ok) {
-    throw new Error('Failed to fetch job status');
+    let errorBody = '';
+    try {
+      errorBody = await response.text();
+    } catch {
+      // ignore
+    }
+    throw new Error(`Failed to fetch job status: ${response.status} ${response.statusText}. Body: ${errorBody}`);
   }
 
   return response.json();
